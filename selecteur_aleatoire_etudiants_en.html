@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sélecteur Aléatoire d'Étudiants</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #1a365d;
+      font-size: 1.5rem;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #718096;
+      font-size: 0.85rem;
+      margin-bottom: 24px;
+    }
+
+    .app {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      margin-bottom: 16px;
+    }
+
+    .card h2 {
+      font-size: 0.95rem;
+      color: #2d3748;
+      margin-bottom: 14px;
+    }
+
+    /* Zone de tirage */
+    .pick-zone {
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .selected-name {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #1a365d;
+      min-height: 50px;
+      margin-bottom: 16px;
+    }
+
+    /* Boutons */
+    button {
+      padding: 10px 22px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary {
+      background: #4299e1;
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #3182ce;
+    }
+
+    .btn-ghost {
+      background: #edf2f7;
+      color: #4a5568;
+    }
+
+    .btn-ghost:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-danger {
+      background: #fed7d7;
+      color: #e53e3e;
+      font-size: 0.75rem;
+      padding: 5px 10px;
+    }
+
+    .btn-danger:hover {
+      background: #feb2b2;
+    }
+
+    /* Formulaire d'ajout */
+    .add-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .add-row input {
+      flex: 1;
+      min-width: 180px;
+      padding: 9px 12px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .add-row input:focus {
+      border-color: #4299e1;
+    }
+
+    /* Compteurss */
+    .counters {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .counter {
+      background: #f7fafc;
+      border-radius: 8px;
+      padding: 10px 18px;
+      text-align: center;
+    }
+
+    .counter .val {
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+
+    .counter .lbl {
+      font-size: 0.72rem;
+      color: #718096;
+    }
+
+    /* Tableau */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    th {
+      background: #edf2f7;
+      color: #4a5568;
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 0.78rem;
+    }
+
+    td {
+      padding: 9px 12px;
+      border-bottom: 1px solid #f0f4f8;
+      color: #2d3748;
+    }
+
+    tr:hover td {
+      background: #f7fafc;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 10px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .badge-green {
+      background: #c6f6d5;
+      color: #276749;
+    }
+
+    .badge-gray {
+      background: #edf2f7;
+      color: #718096;
+    }
+
+    .message {
+      text-align: center;
+      padding: 20px;
+      color: #a0aec0;
+      font-size: 0.88rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Sélecteur Aléatoire d'Étudiants</h1>
+  <p class="subtitle">Tirage parmi les étudiants qui n'ont pas encore participé</p>
+
+  <div class="app">
+
+    <!-- Compteurs -->
+    <div class="counters">
+      <div class="counter">
+        <div class="val" id="countTotal" style="color:#4299e1;">0</div>
+        <div class="lbl">Total</div>
+      </div>
+      <div class="counter">
+        <div class="val" id="countWaiting" style="color:#ed8936;">0</div>
+        <div class="lbl">En attente</div>
+      </div>
+      <div class="counter">
+        <div class="val" id="countDone" style="color:#48bb78;">0</div>
+        <div class="lbl">Ont participé</div>
+      </div>
+    </div>
+
+    <!-- Zone de tirage -->
+    <div class="card">
+      <h2>🎲 Tirage au sort</h2>
+      <div class="pick-zone">
+        <div class="selected-name" id="selectedName">Appuyez sur le bouton</div>
+        <button class="btn-primary" onclick="pickRandom()" style="padding:12px 36px;font-size:1rem;">
+          🎯 Choisir un étudiant
+        </button>
+      </div>
+    </div>
+
+    <!-- Ajouter un étudiant -->
+    <div class="card">
+      <h2>➕ Ajouter un étudiant</h2>
+      <div class="add-row">
+        <input type="text" id="inputName" placeholder="Nom de l'étudiant...">
+        <button class="btn-primary" onclick="addStudent()">Ajouter</button>
+        <button class="btn-ghost" onclick="loadExamples()">Charger exemples</button>
+      </div>
+    </div>
+
+    <!-- Liste -->
+    <div class="card">
+      <h2>📋 Liste des étudiants</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nom</th>
+            <th>Statut</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div class="message" id="emptyMsg">Aucun étudiant. Ajoutez des noms ci-dessus.</div>
+      <div style="margin-top:12px; display:flex; gap:8px;">
+        <button class="btn-ghost" onclick="resetParticipations()">🔄 Réinitialiser</button>
+        <button class="btn-ghost" onclick="clearAll()">🗑️ Tout supprimer</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+
+    let students = [];
+
+    // Chaque étudiant aura la forme :
+    // { name: "Ahmed", participated: false }
+
+    function addStudent() {
+      let name = document.getElementById("inputName").value.trim();
+
+      if (name === "") {
+        alert("Veuillez entrer un nom.");
+        return;
+      }
+
+      for (let i = 0; i < students.length; i++) {
+        if (students[i].name.toLowerCase() === name.toLowerCase()) {
+          alert("Cet étudiant existe déjà !");
+          return;
+        }
+      }
+
+      let student = {
+        name: name,
+        participated: false
+      };
+
+      students.push(student);
+      document.getElementById("inputName").value = "";
+      updateDisplay();
+    }
+
+    function removeStudent(index) {
+      students.splice(index, 1);
+      updateDisplay();
+    }
+
+    function pickRandom() {
+      if (students.length === 0) {
+        document.getElementById("selectedName").textContent = "Aucun étudiant";
+        return;
+      }
+
+      let waiting = [];
+
+      for (let i = 0; i < students.length; i++) {
+        if (students[i].participated === false) {
+          waiting.push(students[i]);
+        }
+      }
+
+      if (waiting.length === 0) {
+        document.getElementById("selectedName").textContent = "Tous ont participé";
+        return;
+      }
+
+      let index = Math.floor(Math.random() * waiting.length);
+      let chosen = waiting[index];
+
+      chosen.participated = true;
+
+      document.getElementById("selectedName").textContent = chosen.name;
+
+      updateDisplay();
+    }
+
+
+
+    function countWaiting() {
+      let count = 0;
+
+      for (let i = 0; i < students.length; i++) {
+        if (students[i].participated === false) {
+          count++;
+        }
+      }
+
+      return count;
+    }
+
+    function countDone() {
+      let count = 0;
+
+      for (let i = 0; i < students.length; i++) {
+        if (students[i].participated === true) {
+          count++;
+        }
+      }
+
+      return count;
+    }
+
+    function updateDisplay() {
+      document.getElementById("countTotal").textContent = students.length;
+      document.getElementById("countWaiting").textContent = countWaiting();
+      document.getElementById("countDone").textContent = countDone();
+
+      let tbody = document.getElementById("tableBody");
+      let emptyMsg = document.getElementById("emptyMsg");
+
+      tbody.innerHTML = "";
+
+      if (students.length === 0) {
+        emptyMsg.style.display = "block";
+      } else {
+        emptyMsg.style.display = "none";
+      }
+
+      for (let i = 0; i < students.length; i++) {
+        let tr = document.createElement("tr");
+        let status = "";
+
+        if (students[i].participated === true) {
+          status = "A participé";
+        } else {
+          status = "En attente";
+        }
+
+        tr.innerHTML =
+          "<td>" + (i + 1) + "</td>" +
+          "<td>" + students[i].name + "</td>" +
+          "<td>" + status + "</td>" +
+          "<td><button onclick='removeStudent(" + i + ")'>X</button></td>";
+
+        tbody.appendChild(tr);
+      }
+    }
+
+    function resetParticipations() {
+      for (let i = 0; i < students.length; i++) {
+        students[i].participated = false;
+      }
+
+      updateDisplay();
+    }
+
+    function clearAll() {
+      if (confirm("Supprimer tous les étudiants ?")) {
+        students = [];
+        updateDisplay();
+      }
+    }
+
+    // Event Listener 9
+
+    function loadExamples() {
+      let names = [
+        'Badr ABAOUZ',
+        'Amine ABDELLAOUI',
+        'Aya ABID',
+        'Zaina AITAHMADOUBRAHIM',
+        'Adam AJEROUASSI',
+        'Farah AMHALI',
+        'Zakarya AZE-DINE',
+        'Abdelliah BAAMOUDI',
+        'Salma BAGHAZI',
+        'Youssef BEN HAMMOUDA',
+        'Nissrine BENALLAL',
+        'Adam BIAR',
+        'Yasmin BOUABOUD',
+        'Douae BOUAYADI',
+        'Hiba BOUSSALAA',
+        'Asmae BOUYA',
+        'Mohamed El Amine CHEDDADI',
+        'Adam CHIKRI',
+        'Amine CHRIF',
+        'Mohamed DALDOULI',
+        'Mohamed Ziad EL ABBASSI',
+        'Abdeljalil EL ACHEHAB',
+        'Malak EL ASSALI',
+        'Alaa Allah EL BAZZAZ',
+        'Omar EL BOUKILI',
+        'Nada EL FARISSI',
+        'Housam EL GOUINA',
+        'Youness EL HACHIMI',
+        'Oussama EL HILALI',
+        'Soukaina EL JAOUHARI',
+        'Salma EL KADI',
+        'Soukaina EL KESSIRI',
+        'Adam EL MANNANI',
+        'Ahmed ENNASSIB',
+        'Abir FAKHREDDINE',
+        'Anass FERTAT',
+        'Yasser HALLOU',
+        'Zakaria HARIRA',
+        'Adam IBOURG-EL IDRISSI',
+        'Yasser JARBOUA',
+        'Rayane KHALDI',
+        'Malak KOULAT',
+        'Abdelmoughit LABRIGUI',
+        'Haitam LAGHMAM',
+        'Youness LATIF',
+        'Younes LOUGNIDI',
+        'Douaae MABROUK',
+        'Anass MAHDAD',
+        'Salma MANA',
+        'Hiba MHIRIT',
+        'Rania MOUJAHED',
+        'Mohamed Idriss NANA',
+        'Youssef OUAZZANI',
+        'Sara QIOUAME',
+        'Ilyas RAHMOUNI',
+        'Aymane RAISS',
+        'El Mehdi REGAGUI',
+        'Noura RIAHI EL IDRISSI',
+        'Mariam SAID',
+        'Amina SIDKI',
+        'Yassine SQUALLI-HOUSSAINI',
+        'Hamza TAALOUCHT',
+        'Taha TAHIRI ALAOUI',
+        'Yahya TALIB',
+        'Nouha TALSSI',
+        'Achraf TATA',
+        'Mouhamadou Taha THIAM',
+        'Wissal TILAMSANE',
+        'Omar TSOULI',
+        'Adam YASSINE',
+        'Diaa Eddine ZAINI'
+      ];
+
+      for (let i = 0; i < names.length; i++) {
+        let exists = false;
+        for (let j = 0; j < students.length; j++) {
+          if (students[j].name === names[i]) {
+            exists = true;
+            break;
+          }
+        }
+
+        if (exists === false) {
+          students.push({
+            name: names[i],
+            participated: false
+          });
+        }
+      }
+
+      updateDisplay();
+    }
+
+  </script>
+</body>
+
+</html>
